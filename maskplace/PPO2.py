@@ -380,7 +380,9 @@ def main():
             save_placement(pl_file_path, env.node_pos, env.ratio)
             strftime_now = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
             pl_path = 'gg_place_new/{}-{}-{}-{}.pl'.format(benchmark, strftime_now, int(hpwl), int(cost))
+            os.makedirs(os.path.dirname(pl_path), exist_ok=True)  # Create the directory if it doesn't exist
             fwrite_pl = open(pl_path, 'w')
+
             for node_name in env.node_pos:
                 if node_name == "V":
                     continue
@@ -389,9 +391,13 @@ def main():
                 y = y * env.ratio + placedb.node_info[node_name]['y'] /2.0
                 fwrite_pl.write("{}\t{:.4f}\t{:.4f}\n".format(node_name, x, y))
             fwrite_pl.close()
-            strftime_now = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-            env.save_fig("./figures/{}-{}-{}-{}.png".format(benchmark, strftime_now, int(hpwl), int(cost)))
-        
+            if args.save_fig:
+                strftime_now = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+                if not os.path.exists("figures"):  # Check and create directory
+                    os.makedirs("figures")
+                env.save_fig("./figures/{}-{}-{}-{}.png".format(benchmark, strftime_now, int(hpwl), int(cost)))
+                print("save_figure: figures/{}-{}-{}-{}.png".format(benchmark, strftime_now, int(hpwl), int(cost)))
+
         training_records.append(TrainingRecord(i_epoch, running_reward))
         if i_epoch % 1 ==0:
             print("Epoch {}, Moving average score is: {:.2f} ".format(i_epoch, running_reward))
