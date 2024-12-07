@@ -399,7 +399,19 @@ def main():
     print("Training completed.")
 
 
+def save_training_metrics(training_records):
+    epochs = [record.episode for record in training_records]
+    rewards = [record.reward for record in training_records]
 
+    plt.figure(figsize=(10, 6))
+    plt.plot(epochs, rewards, label='Reward (Moving Average)', color='blue')
+    plt.xlabel('Epochs')
+    plt.ylabel('Reward')
+    plt.title('Training Reward Trend')
+    plt.grid()
+    plt.legend()
+    plt.savefig('./figures/reward_trend.png')
+    print("Reward trend plot saved as ./figures/reward_trend.png")
 
         
 if __name__ == '__main__':
