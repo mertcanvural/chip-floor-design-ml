@@ -303,46 +303,45 @@ def save_placement(file_path, node_pos, ratio):
 
 
 def main():
-
     agent = PPO()
-    strftime = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) 
-    
+    strftime = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+
     training_records = []
     running_reward = -1000000
-    
 
-    log_file_name = "logs/log_"+ benchmark + "_" + strftime + "_seed_"+ str(args.seed) + "_pnm_" + str(args.pnm) + ".csv"
+    # Log file setup
+    log_file_name = f"logs/log_{benchmark}_{strftime}_seed_{args.seed}_pnm_{args.pnm}.csv"
     if not os.path.exists("logs"):
         os.mkdir("logs")
     fwrite = open(log_file_name, "w")
     load_model_path = None
-   
+
     if load_model_path:
-       agent.load_param(load_model_path)
-    
+        agent.load_param(load_model_path)
+
     best_reward = running_reward
     if args.is_test:
         torch.inference_mode()
 
-    for i_epoch in range(100000):
+    for i_epoch in range(100):
         score = 0
         raw_score = 0
         start = time.time()
         state = env.reset()
 
         done = False
-        while done is False:
+        while not done:
             state_tmp = state.copy()
             action, action_log_prob = agent.select_action(state)
-        
+
             next_state, reward, done, info = env.step(action)
-            assert next_state.shape == (num_state, )
+            assert next_state.shape == (num_state,)
             reward_intrinsic = 0
             if not args.is_test:
                 trans = Transition(state_tmp, action, reward / 200.0, action_log_prob, next_state, reward_intrinsic)
-            if not args.is_test and agent.store_transition(trans):                
-                assert done == True
-                agent.update()
+                if agent.store_transition(trans):
+                    assert done
+                    agent.update()
             score += reward
             raw_score += info["raw_reward"]
             state = next_state
@@ -351,9 +350,10 @@ def main():
         if i_epoch == 0:
             running_reward = score
         running_reward = running_reward * 0.9 + score * 0.1
-        print("score = {}, raw_score = {}".format(score, raw_score))
+        print(f"score = {score}, raw_score = {raw_score}")
 
-        if running_reward > best_reward * 0.975:
+        # Save best model and additional metrics
+        if (running_reward > best_reward * 0.975) or i_epoch == 99:
             best_reward = running_reward
             if i_epoch >= 10:
                 agent.save_param(running_reward)
@@ -361,57 +361,45 @@ def main():
                     strftime_now = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
                     if not os.path.exists("figures"):
                         os.mkdir("figures")
-                    env.save_fig("./figures/{}{}.png".format(strftime_now,int(raw_score)))
-                    print("save_figure: figures/{}{}.png".format(strftime_now,int(raw_score)))
+                    env.save_fig(f"./figures/{strftime_now}{int(raw_score)}.png")
+                    print(f"save_figure: figures/{strftime_now}{int(raw_score)}.png")
                 try:
-                    print("start try")
-                    # cost is the routing estimation based on the MST algorithm
+                    print("Calculating additional metrics...")
+                    # Cost is the routing estimation based on the MST algorithm
                     hpwl, cost = comp_res(placedb, env.node_pos, env.ratio)
-                    print("hpwl = {:.2f}\tcost = {:.2f}".format(hpwl, cost))
-                except:
-                    assert False
-        
-        if args.is_test:
-            print("save node_pos")
-            hpwl, cost = comp_res(placedb, env.node_pos, env.ratio)
-            print("hpwl = {:.2f}\tcost = {:.2f}".format(hpwl, cost))
-            print("time = {}s".format(end-start))
-            pl_file_path = "{}-{}-{}.pl".format(benchmark, int(hpwl), time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) ) 
-            save_placement(pl_file_path, env.node_pos, env.ratio)
-            strftime_now = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-            pl_path = 'gg_place_new/{}-{}-{}-{}.pl'.format(benchmark, strftime_now, int(hpwl), int(cost))
-            os.makedirs(os.path.dirname(pl_path), exist_ok=True)  # Create the directory if it doesn't exist
-            fwrite_pl = open(pl_path, 'w')
+                    print(f"HPWL = {hpwl:.2f}, Cost = {cost:.2f}")
+                    writer.add_scalar('metrics/hpwl', hpwl, i_epoch)
+                    writer.add_scalar('metrics/cost', cost, i_epoch)
+                except Exception as e:
+                    print(f"Failed to compute HPWL/Cost: {e}")
 
-            for node_name in env.node_pos:
-                if node_name == "V":
-                    continue
-                x, y, size_x, size_y = env.node_pos[node_name]
-                x = x * env.ratio + placedb.node_info[node_name]['x'] /2.0
-                y = y * env.ratio + placedb.node_info[node_name]['y'] /2.0
-                fwrite_pl.write("{}\t{:.4f}\t{:.4f}\n".format(node_name, x, y))
-            fwrite_pl.close()
-            if args.save_fig:
-                strftime_now = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-                if not os.path.exists("figures"):  # Check and create directory
-                    os.makedirs("figures")
-                env.save_fig("./figures/{}-{}-{}-{}.png".format(benchmark, strftime_now, int(hpwl), int(cost)))
-                print("save_figure: figures/{}-{}-{}-{}.png".format(benchmark, strftime_now, int(hpwl), int(cost)))
+        # Log metrics to TensorBoard
+        writer.add_scalar('reward/moving_average', running_reward, i_epoch)
+        writer.add_scalar('reward/score', score, i_epoch)
+        writer.add_scalar('reward/raw_score', raw_score, i_epoch)
 
         training_records.append(TrainingRecord(i_epoch, running_reward))
-        if i_epoch % 1 ==0:
-            print("Epoch {}, Moving average score is: {:.2f} ".format(i_epoch, running_reward))
-            fwrite.write("{},{},{:.2f},{}\n".format(i_epoch, score, running_reward, agent.training_step))
+        if i_epoch % 1 == 0:
+            print(f"Epoch {i_epoch}, Moving average score is: {running_reward:.2f}")
+            fwrite.write(f"{i_epoch},{score},{running_reward:.2f},{agent.training_step}\n")
             fwrite.flush()
-        writer.add_scalar('reward', running_reward, i_epoch)
+
         if running_reward > -100:
-            print("Solved! Moving average score is now {}!".format(running_reward))
+            print(f"Solved! Moving average score is now {running_reward}!")
             env.close()
             agent.save_param()
             break
+
         if i_epoch % 100 == 0:
             if placed_num_macro is None:
-                env.write_gl_file("./gl/{}{}.gl".format(strftime, int(score)))
+                env.write_gl_file(f"./gl/{strftime}{int(score)}.gl")
+
+    # Save final training metrics
+    save_training_metrics(training_records)
+    print("Training completed.")
+
+
+
 
         
 if __name__ == '__main__':
