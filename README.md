@@ -1,21 +1,18 @@
-# 24Fall Machine Learning Term Project 
---- 
-Studied Paper: 
-Lai, Yao, Yao Mu, and Ping Luo. “Maskplace: Fast chip placement via reinforced visual representation learning.” Advances in Neural Information Processing Systems 35 (2022): 24019-24030. (NeurIPS 2022, spotlight) 
-
-Paper Link: 
-https://arxiv.org/pdf/2211.13382.pdf 
-
-Original Github Link: 
-https://github.com/laiyao1/maskplace
-
-# 24Fall Machine Learning Term Project 
---- 
-Studied Paper: 
-Lai, Yao, Yao Mu, and Ping Luo. “Maskplace: Fast chip placement via reinforced visual representation learning.” Advances in Neural Information Processing Systems 35 (2022): 24019-24030. (NeurIPS 2022, spotlight) 
-
-Paper Link: 
-https://arxiv.org/pdf/2211.13382.pdf 
-
-Original Github Link: 
-https://github.com/laiyao1/maskplace
+Teammates and Contributions
+1. Mert Can Vural (GitHub: mertcanvural)
+Initial Reward Graphs: Generated the early reward progression graphs to visualize the cumulative rewards during training.
+Graph Contributions:
+Reward Progression Plot
+Action Loss Plot
+Value Loss Plot
+Code Implementation: Reproduced the original MaskPlace codebase and set up the environment on Google Colab.
+Analysis: Contributed to debugging issues related to the PPO agent and validating the training process.
+2. Taha Oğuzhan Uçar (GitHub: ozi14)
+Detailed Graph Analysis: Produced detailed visualizations and analysis, including key metrics for wirelength and cost.
+Graph Contributions:
+Cost and HPWL Metrics Plot
+Reward Metrics During Training Plot
+Training Scores Over Epochs Plot
+Final Placement Layout Visualizations
+Further Analysis: Conducted in-depth analysis of the model's convergence behavior and comparison with baseline methods.
+Documentation: Assisted with documenting the experimental setup and analysis sections.
