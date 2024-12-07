@@ -2,7 +2,7 @@
 
 ## Studied Paper
 
-**Title:** [MaskPlace: Fast Chip Placement via Reinforced Visual Representation Learning](https://arxiv.org/abs/2210.07805)  
+**Title:** [MaskPlace: Fast Chip Placement via Reinforced Visual Representation Learning](https://arxiv.org/pdf/2211.13382)  
 **Authors:** Lai, Yao, Yao Mu, and Ping Luo  
 **Conference:** *Advances in Neural Information Processing Systems 35 (2022) - NeurIPS 2022, Spotlight*  
 
