@@ -6,7 +6,7 @@
 **Authors:** Lai, Yao, Yao Mu, and Ping Luo  
 **Conference:** *Advances in Neural Information Processing Systems 35 (2022) - NeurIPS 2022, Spotlight*  
 
-- **[Original GitHub Repository: MaskPlace Repository](https://github.com/MaskPlace/MaskPlace)**  
+- **[Original GitHub Repository: MaskPlace Repository](https://github.com/laiyao1/maskplace/tree/main)**  
 
 ---
 
@@ -58,10 +58,5 @@ This project aims to reproduce and build upon the results of the *MaskPlace* met
 
 - **Documentation:**  
   - Assisted with documenting the experimental setup and analysis sections.
-
----
-## License
-
-This project follows the same license as the original MaskPlace repository. Please refer to the [original license](https://github.com/MaskPlace/MaskPlace/blob/main/LICENSE) for more information.
 
 ---
